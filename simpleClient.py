@@ -11,6 +11,7 @@ class FTP_CLIENT:
         self.conn = conn
 
     def sendmsg(self, msg):
+        """send message to server"""
         try:
             self.conn.send(msg)
             print("\n message sent")
