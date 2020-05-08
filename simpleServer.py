@@ -16,8 +16,19 @@ class FTP_SERVER:
         msg = self.conn.recv(BUFFER_SIZE)
         print("\nRecieved message: {}".format(msg))
 
+
+    def echo(self):
+        """ echo message from client"""
+        msg = self.conn.recv(BUFFER_SIZE)
+        try:
+            self.conn.send(msg)
+            print("\n message echoed")
+
+        except:
+            print("\n message could not be echoed")
+
     def start(self):
-        self.printClientMessage()
+        self.echo()
         self.conn.close()
 
 
