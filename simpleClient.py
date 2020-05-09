@@ -14,6 +14,8 @@ class FTP_CLIENT:
         try:
             self.conn.send(msg.encode())
             print("\n message sent")
+            svrmag = self.conn.recv(BUFFER_SIZE)
+            print("\nechoed message from the server: {}".format(svrmag))
         except:
             print("\n message could not be sent")
 
