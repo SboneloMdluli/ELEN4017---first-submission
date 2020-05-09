@@ -1,4 +1,5 @@
 import socket
+import os
 
 print("\nWelcome to the FTP server.")
 
@@ -16,7 +17,6 @@ class FTP_SERVER:
         msg = self.conn.recv(BUFFER_SIZE)
         print("\nRecieved message: {}".format(msg))
 
-
     def echo(self):
         """ echo message from client"""
         msg = self.conn.recv(BUFFER_SIZE)
@@ -27,9 +27,20 @@ class FTP_SERVER:
         except:
             print("\n message could not be echoed")
 
-    def start(self):
-        self.echo()
+    def quit(self):
         self.conn.close()
+
+
+    def start(self):
+
+        while True:
+            cmd = self.conn.recv(BUFFER_SIZE)
+
+            if cmd == "QUIT":
+                self.quit()
+                break
+            elif cmd == "ECHO":
+                self.echo()
 
 
 # main program
