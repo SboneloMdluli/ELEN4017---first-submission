@@ -15,7 +15,6 @@ class FTP_CLIENT:
         """ECHO message to server"""
         try:
             self.conn.send("ECHO")
-
         except:
             print("couldnt send cmd")
 

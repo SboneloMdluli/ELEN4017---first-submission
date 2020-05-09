@@ -35,7 +35,7 @@ class FTP_SERVER:
 
         while True:
             cmd = self.conn.recv(BUFFER_SIZE)
-
+            print(cmd)
             if cmd == "QUIT":
                 self.quit()
                 break
