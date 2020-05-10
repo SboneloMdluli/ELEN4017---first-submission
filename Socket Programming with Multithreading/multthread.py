@@ -36,16 +36,18 @@ def print_time(threadName, counter, delay):
 
 
 # Create new threads
+
 numThreads = 5
+counters = [10, 3, 5, 3, 4]
 threads = []
 
+# create new threads
 for i in range(numThreads):
-    t = myThread(i+1, "Thread-{}".format(i+1), 5, i+1)
+    t = myThread(i+1, "Thread-{}".format(i+1), counters[i], i+1)
     threads.append(t)
 
 # Start new Threads
 for i in range(numThreads):
     threads[i].start()
-
 print("Exiting Main Thread")
 
