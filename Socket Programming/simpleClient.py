@@ -1,54 +1,62 @@
 import socket
 import threading
 
-print("\nWelcome to the FTP server.")
+print("\nWelcome to the FTP client.")
 
-TCP_IP = "127.0.1.1"  # local address
-TCP_PORT = 1026
+SERVER_TCP_IP = "127.0.1.1"  # local address
+SERVER_TCP_PORT = 1026
 BUFFER_SIZE = 4096
 
 
-class threadedSERVER(threading.Thread):
-    def __init__(self, conn):
-        threading.Thread.__init__(self)
+class FTP_CLIENT:
+
+    def __init__(self, conn, SERVER_UDPADDR):
         self.conn = conn
-        self.clntAddr = None
+        self.SERVER_UDPADDR = SERVER_UDPADDR
 
-    def printClientMessage(self):
-        """ print message from client """
-        msg, self.clntAddr = self.conn.recvfrom(BUFFER_SIZE)
-        print("\nRecieved message: {}".format(msg))
-
-    def echo(self):
-        """ echo message from client"""
-        msg, self.clntAddr = self.conn.recvfrom(BUFFER_SIZE)
-
+    def echomsg(self, msg):
+        """ECHO message to server"""
         try:
-            self.conn.sendto(msg, self.clntAddr)
-            print("\n message echoed")
+            clntcmd = "ECHO"
+            self.conn.sendto(str.encode(clntcmd), SERVER_UDPADDR)
 
         except:
-            print("\n message could not be echoed")
+            print("couldnt send cmd")
 
-    def run(self):
-        runserver()
+        try:
+            self.conn.sendto(str.encode(msg), SERVER_UDPADDR)
+            print("\n message sent")
+            svrmag = self.conn.recvfrom(BUFFER_SIZE)[0]
+            print("\nechoed message from the server: {}".format(svrmag))
+
+        except:
+            print("\n message could not be sent")
 
     def quit(self):
+        """stop connection"""
+        msg = "QUIT"
+        self.conn.sendto(str.encode(msg), SERVER_UDPADDR)
+
         self.conn.close()
+        print("Stop connection")
+        return
 
-    def runserver(self):
-
+    def start(self):
         while True:
-            cmd = self.conn.recvfrom(BUFFER_SIZE)[0]
-            if cmd == "QUIT":
+            # Listen for a command
+            msg = raw_input("\nEnter a message: ")
+
+            if msg[:4].upper() == "ECHO":
+                self.echomsg(msg[5:])
+            elif msg[:4] == "QUIT":
                 self.quit()
                 break
-            else:
-                self.echo()
 
 
 # main program
-commandSocket = socket.socket(type=socket.SOCK_DGRAM)
-commandSocket.bind((TCP_IP, TCP_PORT))
-threadedClient = threadedSERVER(commandSocket)
-threadedClient.start()
+clientSocket = socket.socket(type=socket.SOCK_DGRAM)
+hostname = socket.gethostname()
+SERVER_UDPADDR = (SERVER_TCP_IP,SERVER_TCP_PORT)
+print("\nConnected to by sever: {}".format(SERVER_UDPADDR))  # IP address for client
+serverInterface = FTP_CLIENT(clientSocket,SERVER_UDPADDR)
+serverInterface.start()

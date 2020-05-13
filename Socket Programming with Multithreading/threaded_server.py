@@ -1,32 +1,50 @@
-import socket
+from socket import *
+import threading
 
-TCP_PORT = 11002
+exitFlag = 0
 BUFFER_SIZE = 4096
-
-serverSocket = socket.socket(type=socket.SOCK_DGRAM)
-serverSocket.bind(('', TCP_PORT))
+SERVER_PORT = 20072
 print("The server is ready to receive")
 
-import threading
-class myThread (threading.Thread):
-    def __init__(self, svrmsg, address):
+class myThread(threading.Thread):
+    def __init__(self, conn):
         threading.Thread.__init__(self)
-        self.address = address
-        self.sentence = svrmsg
+        self.conn = conn
+
+
     def run(self):
-        echo(self.sentence, self.address)
-        print("********************")
 
-def echo(msg, clntAddr):
+        self.echomsg()
 
-    try:
-        print("\nmessage echoed")
-        serverSocket.sendto(msg.encode(), clntAddr)
 
-    except:
-        print("\nmessage couldnt be echoed")
+    def echomsg(self):
+        while True:
+            msg = self.conn.recv(BUFFER_SIZE).decode()
+            if msg == 'close':
+                break
+            else:
+                self.conn.send(msg.encode())
+
+
+# Setup
+
+serverSocket = socket(AF_INET, SOCK_STREAM)
+serverSocket.bind(('', SERVER_PORT))
+
+threads = []
 
 while True:
-    svrmsg, clntAddr = serverSocket.recvfrom(BUFFER_SIZE)
-    thread1 = myThread(svrmsg,clntAddr)
-    thread1.start()# only one thread is running here, however mor
+
+    serverSocket.listen(5)
+    CONN, addr = serverSocket.accept()
+    thread_ = myThread(CONN)
+    thread_.start()
+    threads.append(thread_)
+
+    # connectionSocket.close()
+
+# Join threads in conclusion
+for thread_ in threads:
+    thread_.join()
+
+CONN.close()

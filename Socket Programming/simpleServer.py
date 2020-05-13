@@ -1,50 +1,49 @@
 import socket
 
-print("\nWelcome to the FTP server.")
+print("\nWelcome to the FTP client.")
 
-TCP_IP = "127.0.1.1"  # local address
-TCP_PORT = 1026
+SERVER_TCP_IP = "127.0.1.1"  # local address
+SERVER_TCP_PORT = 11002
 BUFFER_SIZE = 4096
 
+class FTP_CLIENT:
 
-class FTP_SERVER:
-    def __init__(self, conn):
+    def __init__(self, conn, SERVER_UDPADDR):
         self.conn = conn
-        self.clntAddr = None
+        self.SERVER_UDPADDR = SERVER_UDPADDR
 
-    def printClientMessage(self):
-        """ print message from client """
-        msg, self.clntAddr = self.conn.recvfrom(BUFFER_SIZE)
-        print("\nRecieved message: {}".format(msg))
-
-    def echo(self):
-        """ echo message from client"""
-        msg, self.clntAddr = self.conn.recvfrom(BUFFER_SIZE)
+    def echomsg(self, msg):
+        """ECHO message to server"""
 
         try:
-            self.conn.sendto(msg, self.clntAddr)
-            print("\n message echoed")
-
+            self.conn.sendto(str.encode(msg), SERVER_UDPADDR)
+            print("\nmessage sent")
+            svrmag = self.conn.recvfrom(BUFFER_SIZE)[0]
+            print("\nechoed message from the server: {}".format(svrmag))
+            print("\n-----------------------------------------")
         except:
-            print("\n message could not be echoed")
+            print("\n message could not be sent")
 
     def quit(self):
         self.conn.close()
+        print("Stop connection")
+
 
     def start(self):
-
         while True:
-            cmd = self.conn.recvfrom(BUFFER_SIZE)[0]
-            print(cmd)
-            if cmd == "QUIT":
+            # Listen for a command
+            msg = raw_input("\nEnter a message: ")
+
+            if msg == "QUIT":
                 self.quit()
                 break
-            elif cmd == "ECHO":
-                self.echo()
+            else:
+                self.echomsg(msg)
 
 
 # main program
-commandSocket = socket.socket(type=socket.SOCK_DGRAM)
-commandSocket.bind((TCP_IP, TCP_PORT))
-client = FTP_SERVER(commandSocket)
-client.start()
+clientSocket = socket.socket(type=socket.SOCK_DGRAM)
+SERVER_UDPADDR = (SERVER_TCP_IP,SERVER_TCP_PORT)
+print("\nConnected to by sever: {}".format(SERVER_UDPADDR))  # IP address for client
+serverInterface = FTP_CLIENT(clientSocket,SERVER_UDPADDR)
+serverInterface.start()
