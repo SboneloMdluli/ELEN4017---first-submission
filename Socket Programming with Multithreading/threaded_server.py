@@ -1,40 +1,45 @@
 import socket
 
-TCP_PORT = 11002
+print("\nWelcome to the FTP server.")
+
+TCP_IP = "127.0.1.1"  # local address
+TCP_PORT = 1026
 BUFFER_SIZE = 4096
 
-serverSocket = socket.socket(type=socket.SOCK_DGRAM)
-serverSocket.bind(('', TCP_PORT))
-print("The server is ready to receive")
 
-import threading
-class myThread (threading.Thread):
-    def __init__(self, svrmsg, address):
-        threading.Thread.__init__(self)
-        self.address = address
-        self.sentence = svrmsg
-    def run(self):
-        echo(self.sentence, self.address)
-        print("********************")
+class FTP_SERVER:
+    def __init__(self, conn):
+        self.conn = conn
 
-def echo(msg, clntAddr):
+    def echo(self):
 
-    try:
-        print("\nmessage echoed")
-        serverSocket.sendto(msg.encode(), clntAddr)
+        try:
+            self.conn.send(msg.encode())
+            print("\n message echoed")
 
-    except:
-        print("\nmessage couldnt be echoed")
+        except:
+            print("\n message could not be echoed")
 
-threads = []
-while True:
-    svrmsg, clntAddr = serverSocket.recvfrom(BUFFER_SIZE)
-    thread1 = myThread(svrmsg,clntAddr)
-    thread1.start()# only one thread is running here
-    threads.append(thread1)
+    def start(self):
+        self.echo()
+        self.conn.close()
 
-# Join threads in conclusion
-for thread_ in threads:
-    thread_.join()
+    def echomsg(self):
+        while True:
+            msg = self.conn.recv(BUFFER_SIZE).decode()
+            if msg == 'close':
+                break
+            else:
+                self.conn.send(msg.encode())
 
-CONN.close()
+
+# main program
+commandSocket = socket.socket()
+commandSocket.bind((TCP_IP, TCP_PORT))
+commandSocket.listen(1)
+CONN, clientControlAddress = commandSocket.accept()
+
+print("\nConnected to by client address: {}".format(clientControlAddress))  # IP address for client
+
+client = FTP_SERVER(CONN)
+client.start()
